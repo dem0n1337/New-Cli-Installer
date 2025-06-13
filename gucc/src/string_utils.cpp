@@ -36,7 +36,14 @@ auto make_multiline(const std::vector<std::string>& multiline, bool reverse, std
 }
 
 auto join(const std::vector<std::string>& lines, char delim) noexcept -> std::string {
-    return lines | std::ranges::views::join_with(delim) | std::ranges::to<std::string>();
+    std::string result_str;
+    for (size_t i = 0; i < lines.size(); ++i) {
+        result_str += lines[i];
+        if (i < lines.size() - 1) {
+            result_str += delim;
+        }
+    }
+    return result_str;
 }
 
 }  // namespace gucc::utils

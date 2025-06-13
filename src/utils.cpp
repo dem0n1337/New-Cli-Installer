@@ -430,6 +430,13 @@ void set_keymap(const std::string_view& selected_keymap) noexcept {
     spdlog::info("Selected keymap: {}", selected_keymap);
 }
 
+void set_keymap() noexcept {
+    auto* config_instance = Config::instance();
+    auto& config_data = config_instance->data();
+    const auto& keymap = std::get<std::string>(config_data["KEYMAP"]);
+    gucc::utils::exec(fmt::format(FMT_COMPILE("loadkeys {}"), keymap));
+}
+
 void set_timezone(const std::string_view& timezone) noexcept {
     spdlog::info("Timezone is set to {}", timezone);
 #ifdef NDEVENV
@@ -536,16 +543,19 @@ void find_partitions() noexcept {
     spdlog::info("found partitions:\n{}", partitions_tmp);
 
     // create a raid partition list
-    // old_ifs="$IFS"
-    // IFS=$'\n'
-    // raid_partitions=($(lsblk -lno NAME,SIZE,TYPE | grep raid | awk '{print $1,$2}' | uniq))
-    // IFS="$old_ifs"
-
+    const auto& raid_partitions_raw = gucc::utils::exec("lsblk -lno NAME,SIZE,TYPE | grep raid | awk '{print $1,$2}' | uniq");
+    
     // add raid partitions to partition_list
-    // for i in "${raid_partitions[@]}"
-    // do
-    //    partition_list="${partition_list} /dev/md/${i}"
-    // done
+    if (!raid_partitions_raw.empty()) {
+        const auto& raid_parts = gucc::utils::make_multiline(raid_partitions_raw, true);
+        for (const auto& raid_part : raid_parts) {
+            const auto& parts = gucc::utils::make_multiline(raid_part, false, ' ');
+            if (!parts.empty()) {
+                const auto& raid_device = fmt::format("/dev/{} {}", parts[0], parts.size() > 1 ? parts[1] : "");
+                const_cast<std::string&>(partitions_tmp) += '\n' + raid_device;
+            }
+        }
+    }
 
     const auto& partition_list = gucc::utils::make_multiline(partitions_tmp, true);
     config_data["PARTITIONS"]  = partition_list;
@@ -600,6 +610,25 @@ void lvm_detect(std::optional<std::function<void()>> func_callback) noexcept {
     if (!gucc::utils::exec_checked("vgchange -ay -v 1>/dev/null 2>>/tmp/cachyos-install.log")) {
         spdlog::error("Failed to activate LVs");
     }
+#endif
+}
+
+void lvm_del_vg() noexcept;
+
+void lvm_del_all() noexcept {
+#ifdef NDEVENV
+    // Remove all LVs
+    gucc::utils::exec("lvremove -ff $(lvs --noheadings -o lv_path 2>/dev/null) 2>/dev/null", true);
+    
+    // Remove all VGs
+    gucc::utils::exec("vgremove -ff $(vgs --noheadings -o vg_name 2>/dev/null) 2>/dev/null", true);
+    
+    // Remove all PVs
+    gucc::utils::exec("pvremove -ff $(pvs --noheadings -o pv_name 2>/dev/null) 2>/dev/null", true);
+    
+    spdlog::info("Successfully removed all LVM structures");
+#else
+    spdlog::debug("[DEV MODE] Would remove all LVM structures");
 #endif
 }
 
@@ -705,11 +734,48 @@ void install_base(const std::string_view& packages) noexcept {
 
     utils::recheck_luks();
 
-    // add luks and lvm hooks as needed
+    // add luks, lvm, and raid hooks as needed
     const auto& lvm  = std::get<std::int32_t>(config_data["LVM"]);
     const auto& luks = std::get<std::int32_t>(config_data["LUKS"]);
-    spdlog::info("LVM := {}, LUKS := {}", lvm, luks);
+    
+    // Check if RAID is being used
+    bool raid_used = false;
+    try {
+        raid_used = std::get<std::int32_t>(config_data["RAID"]) == 1;
+    } catch (const std::bad_variant_access&) {
+        // RAID key might not exist yet
+        raid_used = false;
+    }
+    
+    spdlog::info("LVM := {}, LUKS := {}, RAID := {}", lvm, luks, raid_used ? 1 : 0);
 
+    // Add RAID modules if RAID is used
+    if (raid_used) {
+        initcpio.insert_hook("block", "mdadm_udev");
+        initcpio.append_module("raid0");
+        initcpio.append_module("raid1");
+        spdlog::info("add mdadm_udev hook and raid modules");
+    }
+    
+    // Add diagnostic logging to verify RAID and LVM compatibility
+    if (raid_used && (lvm == 1)) {
+        spdlog::info("=== RAID+LVM DIAGNOSTIC INFO ===");
+        spdlog::info("RAID arrays:");
+        gucc::utils::exec("cat /proc/mdstat >> /tmp/cachyos-install.log", true);
+        gucc::utils::exec("mdadm --detail --scan >> /tmp/cachyos-install.log", true);
+        
+        spdlog::info("LVM on RAID:");
+        gucc::utils::exec("pvs >> /tmp/cachyos-install.log", true);
+        gucc::utils::exec("vgs >> /tmp/cachyos-install.log", true);
+        gucc::utils::exec("lvs >> /tmp/cachyos-install.log", true);
+        
+        spdlog::info("Checking if mdadm_udev hook is in mkinitcpio.conf:");
+        gucc::utils::exec("grep mdadm_udev /mnt/etc/mkinitcpio.conf >> /tmp/cachyos-install.log", true);
+        
+        spdlog::info("=== END DIAGNOSTIC INFO ===");
+    }
+    
+    // Add LVM and LUKS hooks as needed
     if (lvm == 1 && luks == 0) {
         initcpio.insert_hook("filesystems", "lvm2");
         spdlog::info("add lvm2 hook");
@@ -721,6 +787,14 @@ void install_base(const std::string_view& packages) noexcept {
         initcpio.insert_hook("keyboard", std::vector<std::string>{"consolefont", "keymap"});
         initcpio.insert_hook("filesystems", std::vector<std::string>{"encrypt", "lvm2"});
         spdlog::info("add lvm/luks hooks");
+    }
+    
+    // Ensure mdadm.conf is included in the initramfs if RAID is used
+    if (raid_used) {
+        // Copy mdadm.conf to the installed system
+        gucc::utils::exec("mkdir -p /mnt/etc", true);
+        gucc::utils::exec("cp /etc/mdadm.conf /mnt/etc/mdadm.conf 2>/dev/null", true);
+        spdlog::info("Copied mdadm.conf to installed system");
     }
 
     // Just explicitly flush the data to file,
@@ -898,9 +972,6 @@ pacman -S --noconfirm --needed grub efibootmgr dosfstools grub-btrfs grub-hook
     umount("/mnt/hostlvm");
     fs::remove("/mnt/hostlvm", err);
 
-    // the grub_installer is no longer needed
-    fs::remove(grub_installer_path, err);
-
     /* clang-format off */
     if (!as_default) { return; }
     /* clang-format on */
@@ -918,70 +989,6 @@ pacman -S --noconfirm --needed grub efibootmgr dosfstools grub-btrfs grub-hook
 #endif
 }
 
-auto get_kernel_params() noexcept {
-    auto* config_instance      = Config::instance();
-    auto& config_data          = config_instance->data();
-    const auto& mountpoint     = std::get<std::string>(config_data["MOUNTPOINT"]);
-    const auto& luks           = std::get<std::int32_t>(config_data["LUKS"]);
-    const auto& luks_root_name = std::get<std::string>(config_data["LUKS_ROOT_NAME"]);
-    const auto& luks_uuid      = std::get<std::string>(config_data["LUKS_UUID"]);
-    const auto& luks_dev       = std::get<std::string>(config_data["LUKS_DEV"]);
-
-    // Check if the volume is removable. If so, install all drivers
-    const auto& root_name   = gucc::utils::exec("mount | awk '/\\/mnt / {print $1}' | sed s~/dev/mapper/~~g | sed s~/dev/~~g");
-    const auto& root_device = gucc::utils::exec(fmt::format(FMT_COMPILE("lsblk -i | tac | sed -r 's/^[^[:alnum:]]+//' | sed -n -e '/{}/,/disk/p' | {}"), root_name, "awk '/disk/ {print $1}'"));
-    std::vector<gucc::fs::Partition> partitions{};
-
-    const auto& part_fs   = gucc::fs::utils::get_mountpoint_fs(mountpoint);
-    auto root_part_struct = gucc::fs::Partition{.fstype = part_fs, .mountpoint = "/", .device = fmt::format(FMT_COMPILE("/dev/{}"), root_name)};
-
-    const auto& root_part_uuid = gucc::fs::utils::get_device_uuid(root_part_struct.device);
-    root_part_struct.uuid_str  = root_part_uuid;
-
-    // Set subvol field in case ROOT on btrfs subvolume
-    if ((root_part_struct.fstype == "btrfs"sv) && gucc::utils::exec_checked("mount | awk '$3 == \"/mnt\" {print $0}' | grep btrfs | grep -qv subvolid=5")) {
-        const auto& root_subvol    = gucc::utils::exec("mount | awk '$3 == \"/mnt\" {print $6}' | sed 's/^.*subvol=/subvol=/' | sed -e 's/,.*$/,/p' | sed 's/)//g' | sed 's/subvol=//'");
-        root_part_struct.subvolume = root_subvol;
-
-        spdlog::debug("root btrfs subvol := '{}'", *root_part_struct.subvolume);
-    }
-
-    if (!luks_root_name.empty()) {
-        root_part_struct.luks_mapper_name = luks_root_name;
-        spdlog::debug("kernel_params: luks_mapper_name:='{}'", *root_part_struct.luks_mapper_name);
-    }
-    if (!luks_uuid.empty()) {
-        root_part_struct.luks_uuid = luks_uuid;
-        spdlog::debug("kernel_params: luks_uuid:='{}'", *root_part_struct.luks_uuid);
-    }
-    if (!luks_dev.empty()) {
-        spdlog::debug("kernel_params: luks_dev:='{}'. why we need that here???", luks_dev);
-    }
-
-    // LUKS and lvm with LUKS
-    if (luks == 1) {
-        const auto& luks_mapper_name      = gucc::utils::exec("mount | awk '/\\/mnt / {print $1}' | sed 's/\\/dev\\/mapper\\///'");
-        root_part_struct.luks_mapper_name = luks_mapper_name;
-        spdlog::debug("kernel_params: luks_mapper_name:='{}'", *root_part_struct.luks_mapper_name);
-    }
-    // Lvm without LUKS
-    else if (gucc::utils::exec("lsblk -i | sed -r 's/^[^[:alnum:]]+//' | grep '/mnt$' | awk '{print $6}'") == "lvm"sv) {
-        const auto& luks_mapper_name      = gucc::utils::exec("mount | awk '/\\/mnt / {print $1}' | sed 's/\\/dev\\/mapper\\///'");
-        root_part_struct.luks_mapper_name = luks_mapper_name;
-        spdlog::debug("kernel_params: luks_mapper_name:='{}'", *root_part_struct.luks_mapper_name);
-    }
-
-    // insert root partition
-    partitions.emplace_back(std::move(root_part_struct));
-
-    // TODO(vnepogodin): make these configurable
-    static constexpr auto default_kernel_params = "quiet zswap.enabled=0 nowatchdog"sv;
-
-    const auto& kernel_params = gucc::fs::get_kernel_params(partitions, default_kernel_params);
-
-    return kernel_params;
-}
-
 void install_refind() noexcept {
     spdlog::info("Installing refind...");
 #ifdef NDEVENV
@@ -989,13 +996,8 @@ void install_refind() noexcept {
     auto& config_data           = config_instance->data();
     const auto& mountpoint      = std::get<std::string>(config_data["MOUNTPOINT"]);
     const auto& uefi_mount      = std::get<std::string>(config_data["UEFI_MOUNT"]);
-    const auto& boot_mountpoint = fmt::format(FMT_COMPILE("{}{}"), mountpoint, uefi_mount);
 
     utils::inst_needed("refind");
-
-    const std::vector<std::string> extra_kernel_versions{
-        "linux-cachyos", "linux", "linux-cachyos-cfs", "linux-cachyos-bore",
-        "linux-cachyos-tt", "linux-cachyos-bmq", "linux-cachyos-pds", "linux-cachyos-lts"};
 
     const auto& kernel_params = utils::get_kernel_params();
     if (!kernel_params.has_value()) {
@@ -1004,11 +1006,13 @@ void install_refind() noexcept {
     }
 
     // start refind install & configuration
+    static const std::vector<std::string> empty_extra_kernel_versions{};
+    
     const gucc::bootloader::RefindInstallConfig refind_install_config{
         .is_removable          = utils::is_volume_removable(),
         .root_mountpoint       = mountpoint,
-        .boot_mountpoint       = boot_mountpoint,
-        .extra_kernel_versions = extra_kernel_versions,
+        .boot_mountpoint       = fmt::format(FMT_COMPILE("{}{}"), mountpoint, uefi_mount),
+        .extra_kernel_versions = empty_extra_kernel_versions,
         .kernel_params         = *kernel_params,
     };
 
@@ -1226,10 +1230,6 @@ pacman -S --noconfirm --needed grub os-prober grub-btrfs grub-hook
 
     std::error_code err{};
 
-    fs::permissions(grub_installer_path,
-        fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
-        fs::perm_options::add);
-
     tui::detail::infobox_widget("\nPlease wait...\n");
     gucc::utils::exec(fmt::format(FMT_COMPILE("dd if=/dev/zero of={} seek=1 count=2047"), device_info));
     fs::create_directory("/mnt/hostlvm", err);
@@ -1290,7 +1290,6 @@ void get_cryptroot() noexcept {
         || !gucc::utils::exec_checked(R"(lsblk -i | tac | sed -r 's/^[^[:alnum:]]+//' | sed -n -e '/\/mnt$/,/part/p' | awk '{print $6}' | grep -q crypt)")) {
         return;
     }
-
     config_data["LUKS"] = 1;
     auto& luks_name     = std::get<std::string>(config_data["LUKS_ROOT_NAME"]);
     luks_name           = gucc::utils::exec("mount | awk '/\\/mnt / {print $1}' | sed s~/dev/mapper/~~g | sed s~/dev/~~g");
@@ -1515,85 +1514,6 @@ void install_cachyos_repo() noexcept {
 #ifdef NDEVENV
     if (!gucc::repos::install_cachyos_repos()) {
         spdlog::error("Failed to install cachyos repos");
-    }
-#endif
-}
-
-bool handle_connection() noexcept {
-    bool connected{utils::is_connected()};
-
-#ifdef NDEVENV
-    static constexpr std::int32_t CONNECTION_TIMEOUT = 15;
-    if (!connected) {
-        warning_inter("An active network connection could not be detected, waiting 15 seconds ...\n");
-
-        std::int32_t time_waited{};
-
-        while (!(connected = utils::is_connected())) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-
-            if (time_waited++ >= CONNECTION_TIMEOUT) {
-                break;
-            }
-        }
-
-        if (!connected) {
-            char type{};
-
-            while (utils::prompt_char("An active network connection could not be detected, do you want to connect using wifi? [y/n]", RED, &type)) {
-                if (type != 'n') {
-                    show_iwctl();
-                }
-
-                break;
-            }
-
-            connected = utils::is_connected();
-        }
-    }
-
-    if (connected) {
-        utils::install_cachyos_repo();
-        gucc::utils::exec("yes | pacman -Sy --noconfirm", true);
-    }
-#else
-    utils::install_cachyos_repo();
-#endif
-
-    return connected;
-}
-
-void show_iwctl() noexcept {
-    info_inter("\nInstructions to connect to wifi using iwctl:\n");
-    info_inter("1 - To find your wifi device name (ex: wlan0) type `device list`\n");
-    info_inter("2 - type `station wlan0 scan`, and wait couple seconds\n");
-    info_inter("3 - type `station wlan0 get-networks` (find your wifi Network name ex. my_wifi)\n");
-    info_inter("4 - type `station wlan0 connect my_wifi` (don't forget to press TAB for auto completion!\n");
-    info_inter("5 - type `station wlan0 show` (status should be connected)\n");
-    info_inter("6 - type `exit`\n");
-
-    while (utils::prompt_char("Press a key to continue...", CYAN)) {
-        gucc::utils::exec("iwctl", true);
-        break;
-    }
-}
-
-void set_keymap() noexcept {
-    auto* config_instance = Config::instance();
-    auto& config_data     = config_instance->data();
-    const auto& keymap    = std::get<std::string>(config_data["KEYMAP"]);
-
-    gucc::utils::exec(fmt::format(FMT_COMPILE("loadkeys {}"), keymap));
-}
-
-void enable_autologin([[maybe_unused]] const std::string_view& dm, [[maybe_unused]] const std::string_view& username) noexcept {
-#ifdef NDEVENV
-    auto* config_instance  = Config::instance();
-    auto& config_data      = config_instance->data();
-    const auto& mountpoint = std::get<std::string>(config_data["MOUNTPOINT"]);
-
-    if (!gucc::user::enable_autologin(dm, username, mountpoint)) {
-        spdlog::error("Failed to enable autologin");
     }
 #endif
 }
@@ -1937,6 +1857,76 @@ void final_check() noexcept {
     if (!fs::exists("/mnt/home")) {
         checklist += "- No user accounts have been generated\n";
     }
+}
+
+void enable_autologin(const std::string_view& dm, const std::string_view& username) noexcept {
+#ifdef NDEVENV
+    auto* config_instance = Config::instance();
+    auto& config_data = config_instance->data();
+    const auto& mountpoint = std::get<std::string>(config_data["MOUNTPOINT"]);
+    
+    if (!gucc::user::enable_autologin(dm, username, mountpoint)) {
+        spdlog::error("Failed to enable autologin");
+    }
+#else
+    spdlog::debug("[DEV MODE] Would enable autologin for {} using {}", username, dm);
+#endif
+}
+
+void show_iwctl() noexcept {
+    static constexpr auto iwctl_msg = "iwctl is a wireless configuration utility.\n"
+                                     "To connect to a wireless network:\n"
+                                     "1. List devices: iwctl device list\n"
+                                     "2. Scan for networks: iwctl station <device> scan\n"
+                                     "3. List networks: iwctl station <device> get-networks\n"
+                                     "4. Connect: iwctl station <device> connect <network>\n\n"
+                                     "Press any key to continue...\n";
+    info_inter(iwctl_msg);
+    std::cin.get();
+}
+
+bool handle_connection() noexcept {
+    bool connected{utils::is_connected()};
+
+#ifdef NDEVENV
+    static constexpr std::int32_t CONNECTION_TIMEOUT = 15;
+    if (!connected) {
+        warning_inter("An active network connection could not be detected, waiting 15 seconds ...\n");
+
+        std::int32_t time_waited{};
+
+        while (!(connected = utils::is_connected())) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+
+            if (time_waited++ >= CONNECTION_TIMEOUT) {
+                break;
+            }
+        }
+
+        if (!connected) {
+            char type{};
+
+            while (utils::prompt_char("An active network connection could not be detected, do you want to connect using wifi? [y/n]", RED, &type)) {
+                if (type != 'n') {
+                    show_iwctl();
+                }
+
+                break;
+            }
+
+            connected = utils::is_connected();
+        }
+    }
+
+    if (connected) {
+        utils::install_cachyos_repo();
+        gucc::utils::exec("yes | pacman -Sy --noconfirm", true);
+    }
+#else
+    utils::install_cachyos_repo();
+#endif
+
+    return connected;
 }
 
 }  // namespace utils

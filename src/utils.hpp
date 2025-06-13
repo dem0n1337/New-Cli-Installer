@@ -40,7 +40,7 @@ void lvm_detect(std::optional<std::function<void()>> func_callback = std::nullop
 void umount_partitions() noexcept;
 void find_partitions() noexcept;
 
-[[nodiscard]] auto get_kernel_params() noexcept;
+[[nodiscard]] auto get_kernel_params() noexcept -> std::optional<std::vector<std::string>>;
 [[nodiscard]] auto get_pkglist_base(const std::string_view& packages) noexcept -> std::optional<std::vector<std::string>>;
 [[nodiscard]] auto get_pkglist_desktop(const std::string_view& desktop) noexcept -> std::optional<std::vector<std::string>>;
 auto install_from_pkglist(const std::string_view& packages) noexcept -> bool;
@@ -91,7 +91,15 @@ template <typename T = double>
     requires std::is_floating_point_v<T>
 inline T to_floating(const std::string_view& str) {
     T result = 0;
-    std::from_chars(str.data(), str.data() + str.size(), result);
+    // std::from_chars for floating point is not reliably available with libc++18 in this env
+    // Using std::stoX functions instead.
+    if constexpr (std::is_same_v<T, float>) {
+        result = std::stof(std::string(str));
+    } else if constexpr (std::is_same_v<T, double>) {
+        result = std::stod(std::string(str));
+    } else if constexpr (std::is_same_v<T, long double>) {
+        result = std::stold(std::string(str));
+    }
     return result;
 }
 

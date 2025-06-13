@@ -22,6 +22,13 @@ include(StaticAnalyzers)
 include(Sanitizers)
 include(CPM)
 
+# Disable specific warnings for dependencies
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=suggest-attribute=const")
+    # Add flags to suppress warnings as errors for all targets
+    add_compile_options(-Wno-error=suggest-final-types -Wno-error=suggest-final-methods)
+endif()
+
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(
 #  GLIBMM
@@ -64,6 +71,9 @@ CPMAddPackage(
   GITHUB_REPOSITORY libcpr/cpr
   GIT_TAG 1.11.2
   EXCLUDE_FROM_ALL YES
+  OPTIONS
+    "CMAKE_CXX_STANDARD 17"
+    "CMAKE_CXX_STANDARD_REQUIRED ON"
 )
 CPMAddPackage(
   NAME range-v3
@@ -96,7 +106,7 @@ endif()
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
-target_compile_features(project_options INTERFACE cxx_std_23)
+target_compile_features(project_options INTERFACE cxx_std_20)
 
 ##
 ## Target

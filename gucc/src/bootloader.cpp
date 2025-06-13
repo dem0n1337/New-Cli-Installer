@@ -181,13 +181,20 @@ auto parse_grub_line(const gucc::bootloader::GrubConfig& grub_config, std::strin
 namespace gucc::bootloader {
 
 auto gen_grub_config(const GrubConfig& grub_config) noexcept -> std::string {
-    std::string result = GRUB_DEFAULT_CONFIG | std::ranges::views::split('\n')
+    auto transformed_lines = GRUB_DEFAULT_CONFIG | std::ranges::views::split('\n')
         | std::ranges::views::transform([&](auto&& rng) {
-              auto&& line = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
-              return parse_grub_line(grub_config, line);
-          })
-        | std::ranges::views::join_with('\n')
-        | std::ranges::to<std::string>();
+              auto&& line_sv = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
+              return parse_grub_line(grub_config, line_sv);
+          });
+    std::string result;
+    bool first_line = true;
+    for (const auto& line_str : transformed_lines) {
+        if (!first_line) {
+            result += '\n';
+        }
+        result += line_str;
+        first_line = false;
+    }
     return result;
 }
 
@@ -295,18 +302,25 @@ auto refind_write_extra_kern_strings(std::string_view file_path, const std::vect
         return false;
     }
 
-    std::string&& result = file_content | std::ranges::views::split('\n')
+    auto transformed_lines = file_content | std::ranges::views::split('\n')
         | std::ranges::views::transform([&](auto&& rng) {
               /* clang-format off */
-              auto&& line = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
-              if (line.starts_with("#extra_kernel_version_strings"sv) || line.starts_with("extra_kernel_version_strings"sv)) {
+              auto&& line_sv = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
+              if (line_sv.starts_with("#extra_kernel_version_strings"sv) || line_sv.starts_with("extra_kernel_version_strings"sv)) {
                   return fmt::format(FMT_COMPILE("extra_kernel_version_strings {}"), utils::join(extra_kernel_versions, ','));
               }
               /* clang-format on */
-              return std::string{line.data(), line.size()};
-          })
-        | std::ranges::views::join_with('\n')
-        | std::ranges::to<std::string>();
+              return std::string{line_sv.data(), line_sv.size()};
+          });
+    std::string result;
+    bool first_line = true;
+    for (const auto& line_str : transformed_lines) {
+        if (!first_line) {
+            result += '\n';
+        }
+        result += line_str;
+        first_line = false;
+    }
 
     return file_utils::create_file_for_overwrite(file_path, result);
 }

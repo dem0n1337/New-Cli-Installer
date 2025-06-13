@@ -36,6 +36,7 @@ bool Config::initialize() noexcept {
         s_config->m_data["LVM"]              = 0;
         s_config->m_data["LVM_LV_NAME"]      = "";  // Name of LV to create or use
         s_config->m_data["LVM_SEP_BOOT"]     = 0;
+        s_config->m_data["RAID"]             = 0;  // Flag to indicate if RAID is being used
         s_config->m_data["READY_PARTITIONS"] = std::vector<std::string>{};
         s_config->m_data["ZFS_ZPOOL_NAMES"]  = std::vector<std::string>{};
         s_config->m_data["ZFS_ZPOOL_NAME"]   = "zpcachyos";

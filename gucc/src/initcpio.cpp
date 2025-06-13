@@ -25,13 +25,21 @@ constexpr auto modify_initcpio_line(std::string_view line, std::string_view modu
 }
 
 constexpr auto modify_initcpio_fields(std::string_view file_content, std::string_view modules, std::string_view files, std::string_view hooks) noexcept -> std::string {
-    return file_content | std::ranges::views::split('\n')
+    auto transformed_lines = file_content | std::ranges::views::split('\n')
         | std::ranges::views::transform([&](auto&& rng) {
-              auto&& line = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
-              return modify_initcpio_line(line, modules, files, hooks);
-          })
-        | std::ranges::views::join_with('\n')
-        | std::ranges::to<std::string>();
+              auto&& line_sv = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
+              return modify_initcpio_line(line_sv, modules, files, hooks);
+          });
+    std::string result_str;
+    bool first_line = true;
+    for (const auto& line_str : transformed_lines) {
+        if (!first_line) {
+            result_str += '\n';
+        }
+        result_str += line_str;
+        first_line = false;
+    }
+    return result_str;
 }
 
 }  // namespace
@@ -76,7 +84,11 @@ bool Initcpio::parse_file() noexcept {
             const auto length = std::ranges::distance(line.begin() + static_cast<std::int64_t>(open_bracket_pos), close_bracket - 1);
 
             auto&& input_data = line.substr(open_bracket_pos + 1, static_cast<std::size_t>(length));
-            return input_data | std::ranges::views::split(' ') | std::ranges::to<std::vector<std::string>>();
+            auto split_range = input_data | std::ranges::views::split(' ')
+                | std::ranges::views::transform([](auto&& subrange) {
+                      return std::string(subrange.begin(), subrange.end());
+                  });
+            return std::vector<std::string>(split_range.begin(), split_range.end());
         }
         return {};
     };

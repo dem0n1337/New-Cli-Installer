@@ -9,6 +9,11 @@ project('fmt', 'cpp',
 
 fmt_private_cpp_args = [ ]
 fmt_interface_cpp_args = [ ]
+cpp = meson.get_compiler('cpp')
+if cpp.get_id() == 'clang'
+    fmt_private_cpp_args += ['-stdlib=libc++', '-fstrict-vtable-pointers']
+    fmt_interface_cpp_args += ['-stdlib=libc++']
+endif
 libtype = get_option('default_library')
 if libtype == 'shared'
     fmt_private_cpp_args += [ '-DFMT_EXPORT' ]

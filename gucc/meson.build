@@ -1,3 +1,13 @@
+cc = meson.get_compiler('cpp')
+if cc.get_id() == 'clang'
+    # Ensure gucc_lib is also built and linked with libc++ when using Clang,
+    # consistent with the main project.
+    clang_compile_args = ['-stdlib=libc++', '-fstrict-vtable-pointers']
+    clang_link_args = ['-stdlib=libc++']
+    add_project_arguments(cc.get_supported_arguments(clang_compile_args), language : 'cpp')
+    add_project_link_arguments(cc.get_supported_link_arguments(clang_link_args), language : 'cpp')
+endif
+
 gucc_lib = library('gucc',
     sources : [
         'src/io_utils.cpp',

@@ -1,0 +1,931 @@
+Build started at 2025-06-13T13:06:29.018805
+Main binary: /usr/bin/python3
+Build Options: 
+Python system: Linux
+The Meson build system
+Version: 1.3.0
+Source dir: /app
+Build dir: /app/build
+Build type: native build
+WARNING: Project targets '>=0.55.0' but uses feature introduced in '0.63.0': Wrap files with diff_files.
+Project name: cachyos-installer
+Project version: 0.9.4
+-----------
+Detecting compiler via: `clang++ --version` -> 0
+stdout:
+Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /usr/bin
+-----------
+Running command: clang++ -E -dM -
+-----
+-----------
+Detecting linker via: `clang++ -Wl,--version` -> 0
+stdout:
+GNU ld (GNU Binutils for Ubuntu) 2.38
+Copyright (C) 2022 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+-----------
+Sanity testing C++ compiler: clang++
+Is cross compiler: False.
+Sanity check compiler command line: clang++ sanitycheckcpp.cc -o sanitycheckcpp.exe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command:  /app/build/meson-private/sanitycheckcpp.exe
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+-----------
+Detecting linker via: `llvm-ar --version` -> [Errno 2] No such file or directory: 'llvm-ar'
+-----------
+Detecting linker via: `ar --version` -> 0
+stdout:
+GNU ar (GNU Binutils for Ubuntu) 2.38
+Copyright (C) 2022 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+-----------
+-----------
+Detecting compiler via: `clang++ --version` -> 0
+stdout:
+Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /usr/bin
+-----------
+Running command: clang++ -E -dM -
+-----
+-----------
+Detecting linker via: `clang++ -Wl,--version` -> 0
+stdout:
+GNU ld (GNU Binutils for Ubuntu) 2.38
+Copyright (C) 2022 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+-----------
+Sanity testing C++ compiler: clang++
+Is cross compiler: False.
+Sanity check compiler command line: clang++ sanitycheckcpp.cc -o sanitycheckcpp.exe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command:  /app/build/meson-private/sanitycheckcpp.exe
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+-----------
+Detecting linker via: `llvm-ar --version` -> [Errno 2] No such file or directory: 'llvm-ar'
+-----------
+Detecting linker via: `ar --version` -> 0
+stdout:
+GNU ar (GNU Binutils for Ubuntu) 2.38
+Copyright (C) 2022 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+-----------
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Host machine cpu family: x86_64
+Host machine cpu: x86_64
+Target machine cpu family: x86_64
+Target machine cpu: x86_64
+Running compile:
+Working directory:  /app/build/meson-private/tmpn5s4ip8i
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpn5s4ip8i/testfile.cpp -o /app/build/meson-private/tmpn5s4ip8i/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -fstrict-vtable-pointers` -> 0
+Compiler for C++ supports arguments -fstrict-vtable-pointers: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpkvbqkulm
+Code:
+ int main(void) { return 0; }
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpkvbqkulm/testfile.cpp -o /app/build/meson-private/tmpkvbqkulm/output.exe -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Wl,--fatal-warnings -stdlib=libc++` -> 0
+Compiler for C++ supports link arguments -stdlib=libc++: YES 
+Running command: /usr/bin/git rev-parse --short HEAD
+--- stdout ---
+
+--- stderr ---
+fatal: detected dubious ownership in repository at '/app'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /app
+
+
+Running command: /usr/bin/date +%Y%m%d
+--- stdout ---
+20250613
+
+--- stderr ---
+
+
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: YES (/usr/bin/pkg-config) 0.29.2
+Determining dependency 'spdlog' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion spdlog` -> 1
+stderr:
+Package spdlog was not found in the pkg-config search path.
+Perhaps you should add the directory containing `spdlog.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'spdlog' found
+-----------
+CMake binary for host machine is not cached
+CMake binary missing from cross or native file, or env var undefined.
+Trying a default CMake fallback at cmake
+Found CMake: /usr/bin/cmake (4.0.2)
+Extracting basic cmake information
+CMake Toolchain: Calling CMake once to generate the compiler state
+Calling CMake (['/usr/bin/cmake']) in /app/build/meson-private/__CMake_compiler_info__ with:
+  - "--trace-expand"
+  - "--trace-format=json-v1"
+  - "--no-warn-unused-cli"
+  - "--trace-redirect=cmake_trace.txt"
+  - "-G"
+  - "Ninja"
+  - "-DCMAKE_TOOLCHAIN_FILE=/app/build/meson-private/__CMake_compiler_info__/CMakeMesonTempToolchainFile.cmake"
+  - "."
+CMake trace warning: add_executable() non imported executables are not supported
+CMake TRACE: /app/build/meson-private/__CMake_compiler_info__/CMakeFiles/CMakeScratch/TryCompile-R0jMQa/CMakeLists.txt:22 add_executable(['cmTC_7fa6c'])
+CMake trace warning: target_link_options() TARGET cmTC_7fa6c not found
+CMake TRACE: /app/build/meson-private/__CMake_compiler_info__/CMakeFiles/CMakeScratch/TryCompile-R0jMQa/CMakeLists.txt:28 target_link_libraries(['cmTC_7fa6c', ''])
+Try CMake generator: auto
+Calling CMake (['/usr/bin/cmake']) in /app/build/meson-private/cmake_spdlog with:
+  - "--trace-expand"
+  - "--trace-format=json-v1"
+  - "--no-warn-unused-cli"
+  - "--trace-redirect=cmake_trace.txt"
+  - "-DCMAKE_TOOLCHAIN_FILE=/app/build/meson-private/cmake_spdlog/CMakeMesonToolchainFile.cmake"
+  - "."
+  -- Module search paths:    ['/', '/opt', '/usr', '/usr/local']
+  -- CMake root:             /usr/share/cmake-4.0
+  -- CMake architectures:    ['x86_64-linux-gnu']
+  -- CMake lib search paths: ['lib', 'lib32', 'lib64', 'libx32', 'share', '', 'lib/x86_64-linux-gnu']
+Preliminary CMake check failed. Aborting.
+Run-time dependency spdlog found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency spdlog
+
+Executing subproject spdlog 
+
+Project name: spdlog
+Project version: 1.12.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Run-time dependency threads found: YES
+Build targets in project: 0
+Subproject spdlog finished.
+
+Dependency spdlog from subproject subprojects/spdlog found: YES 1.12.0
+Determining dependency 'fmt' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion fmt` -> 1
+stderr:
+Package fmt was not found in the pkg-config search path.
+Perhaps you should add the directory containing `fmt.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'fmt' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency fmt found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency fmt
+
+Executing subproject fmt 
+
+Project name: fmt
+Project version: 11.1.4
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Build targets in project: 1
+Subproject fmt finished.
+
+Dependency fmt from subproject subprojects/fmt found: YES 11.1.4
+Determining dependency 'ftxui' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion ftxui` -> 1
+stderr:
+Package ftxui was not found in the pkg-config search path.
+Perhaps you should add the directory containing `ftxui.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'ftxui' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency ftxui found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency ftxui (modules: ftxui::screen, ftxui::dom, ftxui::component)
+
+Executing subproject ftxui 
+
+Project name: ftxui
+Project version: 3.0.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Dependency threads found: YES unknown (cached)
+Determining dependency 'range-v3' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion range-v3` -> 1
+stderr:
+Package range-v3 was not found in the pkg-config search path.
+Perhaps you should add the directory containing `range-v3.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'range-v3' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency range-v3 found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency range-v3
+
+Executing subproject ftxui:range-v3 
+
+Project name: range-v3
+Project version: 0.12.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Build targets in project: 1
+Subproject range-v3 finished.
+
+Dependency range-v3 from subproject subprojects/range-v3 found: YES 0.12.0
+Build targets in project: 4
+Subproject ftxui finished.
+
+Dependency ftxui (modules: ftxui::screen, ftxui::dom, ftxui::component) from subproject subprojects/ftxui found: YES 3.0.0
+Determining dependency 'rapidjson' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion rapidjson` -> 1
+stderr:
+Package rapidjson was not found in the pkg-config search path.
+Perhaps you should add the directory containing `rapidjson.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'rapidjson' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency rapidjson found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency rapidjson
+
+Executing subproject rapidjson 
+
+Project name: rapidjson
+Project version: 1.1.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Build targets in project: 4
+Subproject rapidjson finished.
+
+Dependency rapidjson from subproject subprojects/rapidjson found: YES 1.1.0
+Determining dependency 'ctre' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion ctre` -> 1
+stderr:
+Package ctre was not found in the pkg-config search path.
+Perhaps you should add the directory containing `ctre.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'ctre' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency ctre found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency ctre
+
+Executing subproject ctre 
+
+Project name: ctre
+Project version: 3.9.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Build targets in project: 4
+Subproject ctre finished.
+
+Dependency ctre from subproject subprojects/ctre found: YES 3.9.0
+Dependency range-v3 found: YES 0.12.0 (cached)
+Determining dependency 'tomlplusplus' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion tomlplusplus` -> 1
+stderr:
+Package tomlplusplus was not found in the pkg-config search path.
+Perhaps you should add the directory containing `tomlplusplus.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'tomlplusplus' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency tomlplusplus found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency tomlplusplus
+
+Executing subproject tomlplusplus 
+
+DEPRECATION: Option 'compile_library' is deprecated
+Project name: tomlplusplus
+Project version: 3.4.0
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Message: target cpu_family: x86_64
+Message: target cpu: x86_64
+Message: target system: linux
+Message: target endian: little
+Running compile:
+Working directory:  /app/build/meson-private/tmpkqif52dn
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpkqif52dn/testfile.cpp -o /app/build/meson-private/tmpkqif52dn/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -ferror-limit=5` -> 0
+Compiler for C++ supports arguments -ferror-limit=5: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpj0_79z2v
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpj0_79z2v/testfile.cpp -o /app/build/meson-private/tmpj0_79z2v/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -fmax-errors=5` -> 1
+stderr:
+clang++: error: argument unused during compilation: '-fmax-errors=5' [-Werror,-Wunused-command-line-argument]
+-----------
+Compiler for C++ supports arguments -fmax-errors=5: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpyw_6_r4s
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpyw_6_r4s/testfile.cpp -o /app/build/meson-private/tmpyw_6_r4s/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wunused-command-line-argument -Wno-unused-command-line-argument` -> 0
+Compiler for C++ supports arguments -Wno-unused-command-line-argument: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpf02acyjo
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpf02acyjo/testfile.cpp -o /app/build/meson-private/tmpf02acyjo/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wreserved-macro-identifier -Wno-reserved-macro-identifier` -> 0
+Compiler for C++ supports arguments -Wno-reserved-macro-identifier: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpxj90lpuj
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpxj90lpuj/testfile.cpp -o /app/build/meson-private/tmpxj90lpuj/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Winit-list-lifetime -Wno-init-list-lifetime` -> 1
+stderr:
+error: unknown warning option '-Winit-list-lifetime' [-Werror,-Wunknown-warning-option]
+error: unknown warning option '-Wno-init-list-lifetime' [-Werror,-Wunknown-warning-option]
+-----------
+Compiler for C++ supports arguments -Wno-init-list-lifetime: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpz1mxt3p6
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpz1mxt3p6/testfile.cpp -o /app/build/meson-private/tmpz1mxt3p6/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -fchar8_t` -> 0
+Compiler for C++ supports arguments -fchar8_t: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp2xrlx61j
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp2xrlx61j/testfile.cpp -o /app/build/meson-private/tmp2xrlx61j/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /bigobj` -> 1
+stderr:
+clang++: error: no such file or directory: '/bigobj'
+-----------
+Compiler for C++ supports arguments /bigobj: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpt__y7mql
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpt__y7mql/testfile.cpp -o /app/build/meson-private/tmpt__y7mql/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Gy` -> 1
+stderr:
+clang++: error: no such file or directory: '/Gy'
+-----------
+Compiler for C++ supports arguments /Gy: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmptzjr_7ha
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmptzjr_7ha/testfile.cpp -o /app/build/meson-private/tmptzjr_7ha/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /GF` -> 1
+stderr:
+clang++: error: no such file or directory: '/GF'
+-----------
+Compiler for C++ supports arguments /GF: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmp42z4myy2
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp42z4myy2/testfile.cpp -o /app/build/meson-private/tmp42z4myy2/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /openmp-` -> 1
+stderr:
+clang++: error: no such file or directory: '/openmp-'
+-----------
+Compiler for C++ supports arguments /openmp-: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpuesm7rjt
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpuesm7rjt/testfile.cpp -o /app/build/meson-private/tmpuesm7rjt/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /permissive-` -> 1
+stderr:
+clang++: error: no such file or directory: '/permissive-'
+-----------
+Compiler for C++ supports arguments /permissive-: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpi_cspnm5
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpi_cspnm5/testfile.cpp -o /app/build/meson-private/tmpi_cspnm5/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /utf-8` -> 1
+stderr:
+clang++: error: no such file or directory: '/utf-8'
+-----------
+Compiler for C++ supports arguments /utf-8: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmp2sry28v8
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp2sry28v8/testfile.cpp -o /app/build/meson-private/tmp2sry28v8/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /volatile:iso` -> 1
+stderr:
+clang++: error: no such file or directory: '/volatile:iso'
+-----------
+Compiler for C++ supports arguments /volatile:iso: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpkd7ms1ku
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpkd7ms1ku/testfile.cpp -o /app/build/meson-private/tmpkd7ms1ku/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Zc:__cplusplus` -> 1
+stderr:
+clang++: error: no such file or directory: '/Zc:__cplusplus'
+-----------
+Compiler for C++ supports arguments /Zc:__cplusplus: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpjuvtu67b
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpjuvtu67b/testfile.cpp -o /app/build/meson-private/tmpjuvtu67b/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Zc:inline` -> 1
+stderr:
+clang++: error: no such file or directory: '/Zc:inline'
+-----------
+Compiler for C++ supports arguments /Zc:inline: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpsxqaz8pn
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpsxqaz8pn/testfile.cpp -o /app/build/meson-private/tmpsxqaz8pn/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Zc:externConstexpr` -> 1
+stderr:
+clang++: error: no such file or directory: '/Zc:externConstexpr'
+-----------
+Compiler for C++ supports arguments /Zc:externConstexpr: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmp_ajw94o4
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp_ajw94o4/testfile.cpp -o /app/build/meson-private/tmp_ajw94o4/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Zc:preprocessor` -> 1
+stderr:
+clang++: error: no such file or directory: '/Zc:preprocessor'
+-----------
+Compiler for C++ supports arguments /Zc:preprocessor: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpiqw_ekam
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpiqw_ekam/testfile.cpp -o /app/build/meson-private/tmpiqw_ekam/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument /Zc:throwingNew` -> 1
+stderr:
+clang++: error: no such file or directory: '/Zc:throwingNew'
+-----------
+Compiler for C++ supports arguments /Zc:throwingNew: NO 
+Running compile:
+Working directory:  /app/build/meson-private/tmpoirmx9y_
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpoirmx9y_/testfile.cpp -o /app/build/meson-private/tmpoirmx9y_/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -D_HAS_EXCEPTIONS=1` -> 0
+Compiler for C++ supports arguments -D_HAS_EXCEPTIONS=1: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp9_h0tb3t
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp9_h0tb3t/testfile.cpp -o /app/build/meson-private/tmp9_h0tb3t/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wc++98-compat -Wno-c++98-compat` -> 0
+Compiler for C++ supports arguments -Wno-c++98-compat: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp2rj69g6e
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp2rj69g6e/testfile.cpp -o /app/build/meson-private/tmp2rj69g6e/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wc++98-compat-pedantic -Wno-c++98-compat-pedantic` -> 0
+Compiler for C++ supports arguments -Wno-c++98-compat-pedantic: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpjavbj1lg
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpjavbj1lg/testfile.cpp -o /app/build/meson-private/tmpjavbj1lg/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wdocumentation -Wno-documentation` -> 0
+Compiler for C++ supports arguments -Wno-documentation: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpf3dhgbw7
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpf3dhgbw7/testfile.cpp -o /app/build/meson-private/tmpf3dhgbw7/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wdocumentation-unknown-command -Wno-documentation-unknown-command` -> 0
+Compiler for C++ supports arguments -Wno-documentation-unknown-command: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp9uzzukb9
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp9uzzukb9/testfile.cpp -o /app/build/meson-private/tmp9uzzukb9/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wswitch-enum -Wno-switch-enum` -> 0
+Compiler for C++ supports arguments -Wno-switch-enum: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp__hcvn5l
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp__hcvn5l/testfile.cpp -o /app/build/meson-private/tmp__hcvn5l/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wcovered-switch-default -Wno-covered-switch-default` -> 0
+Compiler for C++ supports arguments -Wno-covered-switch-default: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp61fvzav0
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp61fvzav0/testfile.cpp -o /app/build/meson-private/tmp61fvzav0/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wpadded -Wno-padded` -> 0
+Compiler for C++ supports arguments -Wno-padded: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpzk28gc9j
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpzk28gc9j/testfile.cpp -o /app/build/meson-private/tmpzk28gc9j/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wfloat-equal -Wno-float-equal` -> 0
+Compiler for C++ supports arguments -Wno-float-equal: YES 
+Build targets in project: 4
+Subproject tomlplusplus finished.
+
+Dependency tomlplusplus found: YES 3.4.0 (overridden)
+Determining dependency 'cpr' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion cpr` -> 1
+stderr:
+Package cpr was not found in the pkg-config search path.
+Perhaps you should add the directory containing `cpr.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'cpr' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency cpr found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency cpr
+
+Executing subproject cpr 
+
+Project name: cpr
+Project version: 1.11.2
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Determining dependency 'libcurl' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion libcurl` -> 0
+stdout:
+7.81.0
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --cflags libcurl` -> 0
+stdout:
+-I/usr/include/x86_64-linux-gnu
+-----------
+env[PKG_CONFIG_ALLOW_SYSTEM_LIBS]: 1
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs libcurl` -> 0
+stdout:
+-L/usr/lib/x86_64-linux-gnu -lcurl
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs libcurl` -> 0
+stdout:
+-lcurl
+-----------
+Running compile:
+Working directory:  /app/build/meson-private/tmpa03owpdi
+Code:
+ 
+        #include<stddef.h>
+        #include<stdio.h>
+        int main(void) {
+            printf("%ld\n", (long)(sizeof(void *)));
+            return 0;
+        }
+-----------
+Command line: `clang++ /app/build/meson-private/tmpa03owpdi/testfile.cpp -o /app/build/meson-private/tmpa03owpdi/output.exe -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration` -> 0
+Program stdout:
+
+8
+
+Program stderr:
+
+
+Running compile:
+Working directory:  /app/build/meson-private/tmprtc03158
+Code:
+ 
+-----------
+Command line: `clang++ /app/build/meson-private/tmprtc03158/testfile.cpp -o /app/build/meson-private/tmprtc03158/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument --print-search-dirs` -> 0
+stdout:
+programs: =/usr/bin:/usr/lib/llvm-18/bin:/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../x86_64-linux-gnu/bin
+libraries: =/usr/lib/llvm-18/lib/clang/18:/usr/bin/../lib/gcc/x86_64-linux-gnu/13:/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../lib64:/lib/x86_64-linux-gnu:/lib/../lib64:/usr/lib/x86_64-linux-gnu:/usr/lib/../lib64:/usr/lib/llvm-18/bin/../lib:/lib:/usr/lib
+-----------
+Run-time dependency libcurl found: YES 7.81.0
+Build targets in project: 5
+Subproject cpr finished.
+
+Dependency cpr from subproject subprojects/cpr found: YES 1.11.2
+Determining dependency 'doctest' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion doctest` -> 1
+stderr:
+Package doctest was not found in the pkg-config search path.
+Perhaps you should add the directory containing `doctest.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'doctest' found
+-----------
+CMake binary for host machine is cached.
+Preliminary CMake check failed. Aborting.
+Run-time dependency doctest found: NO (tried pkgconfig and cmake)
+Looking for a fallback subproject for the dependency doctest
+
+Executing subproject doctest 
+
+Project name: doctest
+Project version: 2.4.11
+C++ compiler for the host machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the host machine: clang++ ld.bfd 2.38
+C++ compiler for the build machine: clang++ (clang 18.1.8 "Ubuntu clang version 18.1.8 (++20240731024944+3b5b5c1ec4a3-1~exp1~20240731145000.144)")
+C++ linker for the build machine: clang++ ld.bfd 2.38
+Build targets in project: 5
+Subproject doctest finished.
+
+Dependency doctest found: YES 2.4.11 (overridden)
+Running compile:
+Working directory:  /app/build/meson-private/tmpcxvf84hu
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpcxvf84hu/testfile.cpp -o /app/build/meson-private/tmpcxvf84hu/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wshadow` -> 0
+Compiler for C++ supports arguments -Wshadow: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpf9eup6bb
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpf9eup6bb/testfile.cpp -o /app/build/meson-private/tmpf9eup6bb/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wnon-virtual-dtor` -> 0
+Compiler for C++ supports arguments -Wnon-virtual-dtor: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpixt66u60
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpixt66u60/testfile.cpp -o /app/build/meson-private/tmpixt66u60/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wold-style-cast` -> 0
+Compiler for C++ supports arguments -Wold-style-cast: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmprv9fr0vf
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmprv9fr0vf/testfile.cpp -o /app/build/meson-private/tmprv9fr0vf/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wcast-align` -> 0
+Compiler for C++ supports arguments -Wcast-align: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpg7k5__5k
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpg7k5__5k/testfile.cpp -o /app/build/meson-private/tmpg7k5__5k/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wunused` -> 0
+Compiler for C++ supports arguments -Wunused: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpf0gkfhkt
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpf0gkfhkt/testfile.cpp -o /app/build/meson-private/tmpf0gkfhkt/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Woverloaded-virtual` -> 0
+Compiler for C++ supports arguments -Woverloaded-virtual: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpd7n6269o
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpd7n6269o/testfile.cpp -o /app/build/meson-private/tmpd7n6269o/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wpedantic` -> 0
+Compiler for C++ supports arguments -Wpedantic: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpik7hsdl1
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpik7hsdl1/testfile.cpp -o /app/build/meson-private/tmpik7hsdl1/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wconversion` -> 0
+Compiler for C++ supports arguments -Wconversion: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpn_0uyjga
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpn_0uyjga/testfile.cpp -o /app/build/meson-private/tmpn_0uyjga/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wsign-conversion` -> 0
+Compiler for C++ supports arguments -Wsign-conversion: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmpa41v3qgo
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmpa41v3qgo/testfile.cpp -o /app/build/meson-private/tmpa41v3qgo/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wnull-dereference` -> 0
+Compiler for C++ supports arguments -Wnull-dereference: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp2xy8mjeb
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp2xy8mjeb/testfile.cpp -o /app/build/meson-private/tmp2xy8mjeb/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wdouble-promotion` -> 0
+Compiler for C++ supports arguments -Wdouble-promotion: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmp6izzejl0
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmp6izzejl0/testfile.cpp -o /app/build/meson-private/tmp6izzejl0/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wformat=2` -> 0
+Compiler for C++ supports arguments -Wformat=2: YES 
+Running compile:
+Working directory:  /app/build/meson-private/tmppmemfnbh
+Code:
+ extern int i;
+int i;
+
+-----------
+Command line: `clang++ /app/build/meson-private/tmppmemfnbh/testfile.cpp -o /app/build/meson-private/tmppmemfnbh/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -fpermissive -Werror=implicit-function-declaration -Werror=unknown-warning-option -Werror=unused-command-line-argument -Werror=ignored-optimization-argument -Wimplicit-fallthrough` -> 0
+Compiler for C++ supports arguments -Wimplicit-fallthrough: YES 
+Program clang-tidy found: YES (/usr/bin/clang-tidy)
+Build targets in project: 8
+WARNING: Project specifies a minimum meson_version '>=0.55.0' but uses features which were added in newer versions:
+ * 0.63.0: {'Wrap files with diff_files'}
+NOTICE: Future-deprecated features used:
+ * 0.56.0: {'meson.build_root'}
+
+cachyos-installer 0.9.4
+
+    Build type  : debugoptimized
+
+  Subprojects
+    cpr         : YES
+    ctre        : YES
+    doctest     : YES
+    fmt         : YES
+    ftxui       : YES
+    range-v3    : YES (from ftxui)
+    rapidjson   : YES
+    spdlog      : YES
+    tomlplusplus: YES
+
+Found ninja-1.10.1 at /usr/bin/ninja
+Running compile:
+Working directory:  /tmp/tmph7skiy8r
+Code:
+ int i = static_cast<int>(0);
+-----------
+Command line: `clang++ /tmp/tmph7skiy8r/testfile.cpp -o /tmp/tmph7skiy8r/output.obj -D_FILE_OFFSET_BITS=64 -c -std=c++20` -> 0
+Compiler accepts -std=c++20: YES
+Running compile:
+Working directory:  /tmp/tmp_0pp5ce_
+Code:
+ int i = static_cast<int>(0);
+-----------
+Command line: `clang++ /tmp/tmp_0pp5ce_/testfile.cpp -o /tmp/tmp_0pp5ce_/output.obj -D_FILE_OFFSET_BITS=64 -c -std=c++23` -> 0
+Compiler accepts -std=c++23: YES
+Failed to guess install tag for /usr/share/cachyos-installer/install-repo.awk
+Failed to guess install tag for /usr/share/cachyos-installer/install-repo.awk

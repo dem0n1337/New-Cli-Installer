@@ -20,4 +20,8 @@ auto get_device_uuid(std::string_view device) noexcept -> std::string {
     return gucc::utils::exec(fmt::format(FMT_COMPILE("lsblk -o UUID '{}' | awk 'NR==2'"), device));
 }
 
+void zfs_mount_all() {
+    gucc::utils::exec("zfs mount -aO &>/dev/null");
+}
+
 }  // namespace gucc::fs::utils

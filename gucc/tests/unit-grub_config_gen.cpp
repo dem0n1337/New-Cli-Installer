@@ -104,13 +104,16 @@ GRUB_DISABLE_OS_PROBER=false
 )"sv;
 
 inline auto filtered_res(std::string_view content) noexcept -> std::string {
-    auto&& result = content | std::ranges::views::split('\n')
+    auto filtered_view = content | std::ranges::views::split('\n')
         | std::ranges::views::filter([](auto&& rng) {
               auto&& line = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
               return !line.empty() && !line.starts_with("# ");
-          })
-        | std::ranges::views::join_with('\n')
-        | std::ranges::to<std::string>();
+          });
+    auto joined_view = filtered_view | std::ranges::views::join_with('\n');
+    std::string result;
+    for (char ch : joined_view) {
+        result += ch;
+    }
     return result + '\n';
 }
 

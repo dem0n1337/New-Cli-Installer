@@ -192,7 +192,7 @@ void set_xkbmap() noexcept {
     };
 
     static constexpr auto xkbmap_body = "\nSelect Desktop Environment Keymap.\n"sv;
-    auto content_size                 = size(HEIGHT, GREATER_THAN, 10) | size(WIDTH, GREATER_THAN, 40) | vscroll_indicator | yframe | flex;
+    auto content_size                 = size(HEIGHT, GREATER_THAN, 10) | size(WIDTH, GREATER_THAN, 40);
     detail::menu_widget(xkbmap_list, ok_callback, &selected, &screen, xkbmap_body, {std::move(content_size), size(HEIGHT, GREATER_THAN, 1)});
 
     /* clang-format off */
@@ -234,7 +234,7 @@ bool set_timezone() noexcept {
     std::string zone{};
     {
         auto screen           = ScreenInteractive::Fullscreen();
-        const auto& cmd       = gucc::utils::exec(R"(cat /usr/share/zoneinfo/zone.tab | awk '{print $3}' | grep '/' | sed 's/\/.*//g' | sort -ud)");
+        const auto& cmd       = gucc::utils::exec(R"(cat /usr/share/zoneinfo/zone.tab | awk '{print $3}' | grep '/' | sed 's/\/.*//' | sort -ud)");
         const auto& zone_list = gucc::utils::make_multiline(cmd);
 
         std::int32_t selected{};
@@ -366,7 +366,7 @@ void create_new_user() noexcept {
             }
             screen.ExitLoopClosure()();
         };
-        detail::radiolist_widget(radiobox_list, ok_callback, &selected, &screen, {.text = shells_options_body}, {.text_size = nothing});
+        detail::radiolist_widget(radiobox_list, ok_callback, &selected, &screen, {shells_options_body, "Select Shell"}, {.text_size = nothing});
     }
 
     // Enter password. This step will only be reached where the loop has been skipped or broken.
@@ -458,7 +458,7 @@ void install_grub_uefi() noexcept {
     /* clang-format on */
 
     std::string bootid{"cachyos"};
-    if (gucc::utils::exec_checked("efibootmgr | cut -d\\  -f2 | grep -q -o cachyos")) {
+    if (gucc::utils::exec_checked("efibootmgr | cut -d\\  -f2 | grep -q cachyos")) {
         static constexpr auto bootid_content = "\nInput the name identify your grub installation. Choosing an existing name overwrites it.\n"sv;
         if (!detail::inputbox_widget(bootid, bootid_content, size(ftxui::HEIGHT, ftxui::LESS_THAN, 9) | size(ftxui::WIDTH, ftxui::LESS_THAN, 30))) {
             return;
@@ -593,6 +593,7 @@ void install_base() noexcept {
 
     // Create the base list of packages
     std::unique_ptr<bool[]> kernels_state{new bool[available_kernels.size()]{false}};
+    // TODO(vnepogodin): handle base-devel
 
     auto screen = ScreenInteractive::Fullscreen();
     std::string packages{};
@@ -722,6 +723,19 @@ void config_base_menu() noexcept {
 
 // Grub auto-detects installed kernel
 void bios_bootloader() {
+#ifdef NDEVENV
+    // Ensure again that efivarfs is mounted
+    static constexpr auto efi_path = "/sys/firmware/efi/"sv;
+    if (fs::exists(efi_path) && fs::is_directory(efi_path)) {
+        // Mount efivarfs if it is not already mounted
+        const auto& mount_out = gucc::utils::exec("mount | grep /sys/firmware/efi/efivars");
+        if (mount_out.empty() && (mount("efivarfs", "/sys/firmware/efi/efivars", "efivarfs", 0, "") != 0)) {
+            perror("utils::uefi_bootloader");
+            exit(1);
+        }
+    }
+#endif
+
     static constexpr auto bootloaderInfo        = "The installation device for GRUB can be selected in the next step."sv;
     const std::vector<std::string> menu_entries = {
         "grub",
@@ -778,6 +792,7 @@ void tweaks_menu() noexcept {
             break;
         }
     };
+
     static constexpr auto tweaks_body = "Various configuration options"sv;
     detail::menu_widget(menu_entries, ok_callback, &selected, &screen, tweaks_body, {.text_size = size(HEIGHT, GREATER_THAN, 1)});
 }
@@ -938,7 +953,7 @@ auto select_mount_opts(std::string_view partition, std::string_view fstype, bool
     const auto& format_device    = gucc::utils::exec(fmt::format(FMT_COMPILE("lsblk -i | tac | sed -r 's/^[^[:alnum:]]+//' | sed -n -e '/{}/,/disk/p' | {}"), format_name, "awk '/disk/ {print $1}'"));
     const auto& rotational_queue = (gucc::utils::exec(fmt::format(FMT_COMPILE("cat /sys/block/{}/queue/rotational"), format_device)) == "1"sv);
 
-    std::unique_ptr<bool[]> fs_opts_state{new bool[fs_opts.size()]{false}};
+    bool fs_opts_state[32] = {false};
     for (size_t i = 0; i < fs_opts.size(); ++i) {
         const auto& fs_opt = fs_opts[i];
         auto& fs_opt_state = fs_opts_state[i];
@@ -967,14 +982,14 @@ auto select_mount_opts(std::string_view partition, std::string_view fstype, bool
     };
 
     if (force) {
-        mount_opts_info = detail::from_checklist_string(fs_opts, fs_opts_state.get());
+        mount_opts_info = detail::from_checklist_string(fs_opts, fs_opts_state);
         cleanup_mount_opts(mount_opts_info);
         return mount_opts_info;
     }
 
     auto screen      = ScreenInteractive::Fullscreen();
     auto ok_callback = [&] {
-        mount_opts_info = detail::from_checklist_string(fs_opts, fs_opts_state.get());
+        mount_opts_info = detail::from_checklist_string(fs_opts, fs_opts_state);
         screen.ExitLoopClosure()();
     };
 
@@ -983,7 +998,7 @@ auto select_mount_opts(std::string_view partition, std::string_view fstype, bool
     auto content_size              = size(HEIGHT, GREATER_THAN, 10) | size(WIDTH, GREATER_THAN, 40) | vscroll_indicator | yframe | flex;
 
     static constexpr auto mount_options_body = "\nUse [Space] to de/select the desired mount\noptions and review carefully. Please do not\nselect multiple versions of the same option.\n"sv;
-    detail::checklist_widget(fs_opts, ok_callback, fs_opts_state.get(), &screen, mount_options_body, fs_title, {std::move(content_size), nothing});
+    detail::checklist_widget(fs_opts, ok_callback, fs_opts_state, &screen, mount_options_body, fs_title, {std::move(content_size), size(ftxui::HEIGHT, ftxui::GREATER_THAN, 1)});
     cleanup_mount_opts(mount_opts_info);
 
     // If mount options selected, confirm choice
@@ -1007,7 +1022,7 @@ void mount_opts(bool force) noexcept {
     auto& config_data     = config_instance->data();
 
     const auto& file_sys  = std::get<std::string>(config_data["FILESYSTEM"]);
-    const auto& fs_opts   = std::get<std::vector<std::string>>(config_data["fs_opts"]);
+    // const auto& fs_opts   = std::get<std::vector<std::string>>(config_data["fs_opts"]);
     const auto& partition = std::get<std::string>(config_data["PARTITION"]);
 
     // select mount opts
@@ -1068,6 +1083,7 @@ void make_swap(std::vector<gucc::fs::Partition>& partition_schema) noexcept {
             success           = true;
             screen.ExitLoopClosure()();
         };
+
         /* clang-format off */
         detail::menu_widget(temp, ok_callback, &selected, &screen, sel_swap_body, {.text_size = size(HEIGHT, GREATER_THAN, 1)});
         if (!success) { return; }
@@ -1114,7 +1130,7 @@ void make_swap(std::vector<gucc::fs::Partition>& partition_schema) noexcept {
     auto swap_partition = gucc::fs::Partition{.fstype = "linuxswap"s, .mountpoint = ""s, .device = partition, .mount_opts = "defaults"s};
 
     // Warn user if creating a new swap
-    const auto& swap_part = gucc::utils::exec(fmt::format(FMT_COMPILE("lsblk -o FSTYPE '{}' | grep -i 'swap'"), partition));
+    const auto& swap_part = gucc::utils::exec(fmt::format(FMT_COMPILE("lsblk {} -o FSTYPE | grep -i 'swap'"), partition));
     if (swap_part != "swap"sv) {
         const auto& do_swap = detail::yesno_widget(fmt::format(FMT_COMPILE("\nmkswap {}\n"), partition), size(HEIGHT, LESS_THAN, 15) | size(WIDTH, LESS_THAN, 75));
         /* clang-format off */
@@ -1189,14 +1205,14 @@ void lvm_del_vg() noexcept {
 }
 
 void lvm_menu() noexcept {
+    tui::lvm_detect();
+
     const std::vector<std::string> menu_entries = {
         "Create VG and LV(s)",
         "Delete Volume Groups",
         "Delete *ALL* VGs, LVs, PVs",
         "Back",
     };
-
-    tui::lvm_detect();
 
     auto screen = ScreenInteractive::Fullscreen();
     std::int32_t selected{};
@@ -1219,8 +1235,225 @@ void lvm_menu() noexcept {
     detail::menu_widget(menu_entries, ok_callback, &selected, &screen, lvm_menu_body, {size(HEIGHT, LESS_THAN, 18), std::move(text_size)});
 }
 
-// creates a new zpool on an existing partition
-bool zfs_create_zpool(bool do_create_zpool = true) noexcept {
+// RAID Implementation
+void raid_menu() noexcept {
+    const std::vector<std::string> menu_entries = {
+        "Create RAID Array",
+        "List RAID Arrays",
+        "Remove RAID Array",
+        "Back",
+    };
+
+    auto screen = ScreenInteractive::Fullscreen();
+    std::int32_t selected{};
+    auto ok_callback = [&] {
+        switch (selected) {
+        case 0:
+            tui::raid_create_array();
+            break;
+        case 1:
+            tui::raid_list_arrays();
+            break;
+        case 2:
+            tui::raid_remove_array();
+            break;
+        default:
+            screen.ExitLoopClosure()();
+            return;
+        }
+    };
+
+    static constexpr auto raid_menu_body = "\nRAID (Redundant Array of Independent Disks) allows you to combine\nmultiple physical disks into a single logical unit.\n\nRAID 0: Striping - Better performance, no redundancy\nRAID 1: Mirroring - Data redundancy, half the total capacity\n"sv;
+    auto text_size = size(HEIGHT, LESS_THAN, 10) | size(WIDTH, GREATER_THAN, 40);
+    detail::menu_widget(menu_entries, ok_callback, &selected, &screen, raid_menu_body, {size(HEIGHT, LESS_THAN, 18), std::move(text_size)});
+}
+
+void raid_create_array() noexcept {
+    // First, select RAID level
+    const std::vector<std::string> raid_levels = {
+        "RAID 0 (Striping)",
+        "RAID 1 (Mirroring)",
+        "Back",
+    };
+
+    auto screen = ScreenInteractive::Fullscreen();
+    std::int32_t selected_level{};
+    std::string raid_level{};
+    
+    auto level_callback = [&] {
+        switch (selected_level) {
+        case 0:
+            raid_level = "0";
+            break;
+        case 1:
+            raid_level = "1";
+            break;
+        default:
+            screen.ExitLoopClosure()();
+            return;
+        }
+        screen.ExitLoopClosure()();
+    };
+    detail::menu_widget(raid_levels, level_callback, &selected_level, &screen, "\nSelect RAID level:\n"sv);
+    
+    if (raid_level.empty()) {
+        return;
+    }
+
+    // Get list of available disks
+    const auto& available_disks = gucc::utils::exec("lsblk -dpno NAME,SIZE,TYPE | grep -E '(disk|raid)' | grep -v -E '(SWAP|LVM)' | awk '{print $1 \" (\" $2 \")\"}'");
+    const auto& disk_list = gucc::utils::make_multiline(available_disks);
+    
+    if (disk_list.size() < 2) {
+        detail::msgbox_widget("\nAt least 2 disks are required to create a RAID array.\n");
+        return;
+    }
+
+    // Select disks for RAID
+    bool disk_selections[32] = {false};
+    std::vector<std::string> selected_disks;
+    
+    auto disks_callback = [&] {
+        selected_disks.clear();
+        for (std::size_t i = 0; i < disk_list.size(); ++i) {
+            if (disk_selections[i]) {
+                // Extract just the device path (remove size info)
+                auto disk_entry = disk_list[i];
+                auto space_pos = disk_entry.find(' ');
+                if (space_pos != std::string::npos) {
+                    disk_entry = disk_entry.substr(0, space_pos);
+                }
+                selected_disks.push_back(disk_entry);
+            }
+        }
+        screen.ExitLoopClosure()();
+    };
+
+    detail::checklist_widget(disk_list, disks_callback, disk_selections, &screen,
+        fmt::format("\nSelect disks for RAID {} (minimum 2):\n", raid_level), "", {.text_size = size(HEIGHT, LESS_THAN, 10)});
+    
+    if (selected_disks.size() < 2) {
+        detail::msgbox_widget("\nAt least 2 disks must be selected.\n");
+        return;
+    }
+
+    // Get RAID device name
+    std::string raid_device{};
+    const auto& existing_raids = gucc::utils::exec("ls /dev/md* 2>/dev/null | grep -E '^/dev/md[0-9]+$'");
+    
+    if (existing_raids.empty()) {
+        raid_device = "/dev/md0";
+    } else {
+        // Extract number and increment
+        auto last_num = existing_raids.substr(7); // Remove "/dev/md"
+        auto num = std::stoi(last_num) + 1;
+        raid_device = fmt::format("/dev/md{}", num);
+    }
+
+    // Confirm creation
+    const auto& confirm_msg = fmt::format("\nCreate RAID {} array '{}' with disks:\n{}\n\nThis will destroy all data on selected disks!\n",
+        raid_level, raid_device, gucc::utils::join(selected_disks, '\n'));
+    
+    const auto& do_create = detail::yesno_widget(confirm_msg);
+    if (!do_create) {
+        return;
+    }
+
+#ifdef NDEVENV
+    // Stop any existing arrays on these disks
+    for (const auto& disk : selected_disks) {
+        // Fix syntax error in mdadm commands
+        gucc::utils::exec(fmt::format("mdadm --stop {} 2>/dev/null", disk), true);
+        gucc::utils::exec(fmt::format("mdadm --zero-superblock {} 2>/dev/null", disk), true);
+        spdlog::debug("Prepared disk {} for RAID", disk);
+    }
+
+    // Create the RAID array
+    const auto& mdadm_cmd = fmt::format("mdadm --create {} --level={} --raid-devices={} {} --run",
+        raid_device, raid_level, selected_disks.size(), gucc::utils::join(selected_disks, ' '));
+    
+    spdlog::info("Creating RAID array with command: {}", mdadm_cmd);
+    
+    detail::infobox_widget(fmt::format("\nCreating RAID {} array...\nThis may take some time.\n", raid_level));
+    
+    if (!gucc::utils::exec_checked(mdadm_cmd)) {
+        detail::msgbox_widget("\nFailed to create RAID array.\nCheck /tmp/cachyos-install.log for details.\n");
+        return;
+    }
+
+    // Save RAID configuration
+    gucc::utils::exec("mdadm --detail --scan >> /etc/mdadm.conf", true);
+    spdlog::info("RAID configuration saved to /etc/mdadm.conf");
+    
+    // Ensure RAID modules are added to initramfs
+    auto* config_instance = Config::instance();
+    auto& config_data = config_instance->data();
+    config_data["RAID"] = 1;  // Mark that RAID is being used
+    
+    detail::msgbox_widget(fmt::format("\nRAID array {} created successfully!\n", raid_device));
+#else
+    detail::msgbox_widget(fmt::format("\n[DEV MODE] Would create RAID {} array '{}' with disks:\n{}\n",
+        raid_level, raid_device, gucc::utils::join(selected_disks, '\n')));
+#endif
+}
+
+void raid_list_arrays() noexcept {
+    const auto& raid_info = gucc::utils::exec("cat /proc/mdstat 2>/dev/null | grep -E '^md[0-9]+ :' || echo 'No RAID arrays found'");
+    
+    auto screen = ScreenInteractive::Fullscreen();
+    detail::msgbox_widget(fmt::format("\nCurrent RAID Arrays:\n\n{}\n", raid_info), size(HEIGHT, LESS_THAN, 20) | size(WIDTH, GREATER_THAN, 60));
+}
+
+void raid_remove_array() noexcept {
+    // Get list of RAID arrays
+    const auto& arrays_raw = gucc::utils::exec("ls /dev/md* 2>/dev/null | grep -E '^/dev/md[0-9]+$'");
+    
+    if (arrays_raw.empty()) {
+        detail::msgbox_widget("\nNo RAID arrays found.\n");
+        return;
+    }
+
+    const auto& arrays = gucc::utils::make_multiline(arrays_raw);
+    
+    auto screen = ScreenInteractive::Fullscreen();
+    std::int32_t selected{};
+    std::string selected_array{};
+    
+    auto ok_callback = [&] {
+        selected_array = arrays[static_cast<std::size_t>(selected)];
+        screen.ExitLoopClosure()();
+    };
+
+    detail::menu_widget(arrays, ok_callback, &selected, &screen, "\nSelect RAID array to remove:\n"sv);
+    
+    if (selected_array.empty()) {
+        return;
+    }
+
+    // Confirm removal
+    const auto& do_remove = detail::yesno_widget(fmt::format("\nRemove RAID array {}?\nThis will stop the array but preserve data on member disks.\n", selected_array));
+    
+    if (!do_remove) {
+        return;
+    }
+
+#ifdef NDEVENV
+    // Stop the array
+    if (!gucc::utils::exec_checked(fmt::format("mdadm --stop {}", selected_array))) {
+        detail::msgbox_widget("\nFailed to stop RAID array.\nIt may be in use.\n");
+        return;
+    }
+    
+    // Remove from mdadm.conf
+    gucc::utils::exec(fmt::format("sed -i '/{}/d' /etc/mdadm.conf 2>/dev/null", selected_array.substr(5)), true);
+    
+    detail::msgbox_widget(fmt::format("\nRAID array {} removed successfully!\n", selected_array));
+#else
+    detail::msgbox_widget(fmt::format("\n[DEV MODE] Would remove RAID array {}\n", selected_array));
+#endif
+}
+
+void zfs_create_zpool(bool do_create_zpool = true) noexcept {
     // LVM Detection. If detected, activate.
     tui::lvm_detect();
 
@@ -1239,7 +1472,7 @@ bool zfs_create_zpool(bool do_create_zpool = true) noexcept {
     /* const auto& parts = gucc::utils::make_multiline(ignore_part);
     for (const auto& part : parts) {
         utils::delete_partition_in_list(part);
-    }*/
+   }*/
 
     // Identify the partition for the zpool
     {
@@ -1260,7 +1493,7 @@ bool zfs_create_zpool(bool do_create_zpool = true) noexcept {
         auto text_size                                = size(HEIGHT, LESS_THAN, 10) | size(WIDTH, GREATER_THAN, 40);
         detail::menu_widget(partitions, ok_callback, &selected, &screen, zfs_zpool_partmenu_body, {size(HEIGHT, LESS_THAN, 18), std::move(text_size)});
         /* clang-format off */
-        if (!success) { return false; }
+        if (!success) { return; }
         /* clang-format on */
     }
 
@@ -1275,7 +1508,7 @@ bool zfs_create_zpool(bool do_create_zpool = true) noexcept {
     // Loop while zpool name is not valid.
     while (true) {
         if (!detail::inputbox_widget(zfs_zpool_name, zfs_menu_text, size(HEIGHT, GREATER_THAN, 1))) {
-            return false;
+            return;
         }
         zfs_menu_text = zfs_zpool_body;
 
@@ -1299,18 +1532,22 @@ bool zfs_create_zpool(bool do_create_zpool = true) noexcept {
     config_data["ZFS_ZPOOL_NAME"] = zfs_zpool_name;
 
     /* clang-format off */
-    if (!do_create_zpool) { return true; }
+    if (!do_create_zpool) { return; }
     /* clang-format on */
 
     const auto& partition = std::get<std::string>(config_data["PARTITION"]);
-    return utils::zfs_create_zpool(partition, zfs_zpool_name);
+    bool success = utils::zfs_create_zpool(partition, zfs_zpool_name);
+    if (!success) {
+        spdlog::error("Failed to create ZFS pool {}", zfs_zpool_name);
+    }
+    return;
 }
 
 bool zfs_import_pool() noexcept {
-    const auto& zlist = gucc::utils::make_multiline(gucc::utils::exec("zpool import 2>/dev/null | grep '^[[:space:]]*pool' | awk -F : '{print $2}' | awk '{$1=$1};1'"));
+    const auto& zlist = gucc::utils::make_multiline(gucc::fs::zfs_list_datasets());
     if (zlist.empty()) {
         // no available datasets
-        detail::infobox_widget("\nNo pools available\n"sv);
+        detail::infobox_widget("\nNo pools available\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return false;
     }
@@ -1347,10 +1584,10 @@ bool zfs_import_pool() noexcept {
 }
 
 bool zfs_new_ds(const std::string_view& zmount = "") noexcept {
-    const auto& zlist = gucc::utils::make_multiline(gucc::fs::zfs_list_pools());
+    const auto& zlist = gucc::utils::make_multiline(gucc::utils::exec("zpool list -H -o name"));
     if (zlist.empty()) {
         // no available datasets
-        detail::infobox_widget("\nNo pools available\n"sv);
+        detail::infobox_widget("\nNo pools available\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return false;
     }
@@ -1442,7 +1679,7 @@ void zfs_set_property() noexcept {
     const auto& zlist = gucc::utils::make_multiline(gucc::fs::zfs_list_datasets());
     if (zlist.empty()) {
         // no available datasets
-        detail::infobox_widget("\nNo datasets available\n"sv);
+        detail::infobox_widget("\nNo datasets available\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return;
     }
@@ -1499,7 +1736,7 @@ void zfs_destroy_dataset() noexcept {
     const auto& zlist = gucc::utils::make_multiline(gucc::fs::zfs_list_datasets());
     if (zlist.empty()) {
         // no available datasets
-        detail::infobox_widget("\nNo datasets available\n"sv);
+        detail::infobox_widget("\nNo datasets available\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return;
     }
@@ -1540,100 +1777,14 @@ void zfs_auto() noexcept {
 
     // it creates using our preset, so don't ask for zpool name
     if (!utils::zfs_auto_pres(partition, zfs_zpool_name)) {
-        detail::infobox_widget("\nOperation failed\n"sv);
+        detail::infobox_widget("\nOperation failed\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return;
     }
 
     // provide confirmation to the user
-    detail::infobox_widget("\nAutomatic zfs provisioning has been completed\n"sv);
+    detail::infobox_widget("\nAutomatic zfs provisioning has been completed\n");
     std::this_thread::sleep_for(std::chrono::seconds(3));
-}
-
-void zfs_menu_manual() noexcept {
-    const std::vector<std::string> menu_entries = {
-        "Create a new zpool",
-        "Import an existing zpool",
-        "Create and mount a ZFS filesystem",
-        "Create a legacy ZFS filesystem",
-        "Create a new ZVOL",
-        "Set a property on a zfs filesystem",
-        "Destroy a ZFS dataset",
-        "Back",
-    };
-
-    auto screen = ScreenInteractive::Fullscreen();
-    std::int32_t selected{};
-    auto ok_callback = [&] {
-        switch (selected) {
-        case 0:
-            tui::zfs_create_zpool();
-            break;
-        case 1:
-            tui::zfs_import_pool();
-            break;
-        case 2:
-            tui::zfs_new_ds();
-            break;
-        case 3:
-            tui::zfs_new_ds("legacy"sv);
-            break;
-        case 4:
-            tui::zfs_new_ds("zvol"sv);
-            break;
-        case 5:
-            tui::zfs_set_property();
-            break;
-        case 6:
-            tui::zfs_destroy_dataset();
-            break;
-        default:
-            screen.ExitLoopClosure()();
-            return;
-        }
-    };
-
-    static constexpr auto zfs_menu_manual_body = "\nPlease select an option below\n"sv;
-    auto text_size                             = size(HEIGHT, LESS_THAN, 10) | size(WIDTH, GREATER_THAN, 40);
-    detail::menu_widget(menu_entries, ok_callback, &selected, &screen, zfs_menu_manual_body, {size(HEIGHT, LESS_THAN, 18), std::move(text_size)});
-}
-
-// The main ZFS menu
-void zfs_menu() noexcept {
-#ifdef NDEVENV
-    // check for zfs support
-    if (!gucc::utils::exec_checked("modprobe zfs 2>>/tmp/cachyos-install.log &>/dev/null")) {
-        detail::infobox_widget("\nThe kernel modules to support ZFS could not be found\n"sv);
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        return;
-    }
-#endif
-
-    const std::vector<std::string> menu_entries = {
-        "Automatically configure",
-        "Manual configuration",
-        "Back",
-    };
-
-    auto screen = ScreenInteractive::Fullscreen();
-    std::int32_t selected{};
-    auto ok_callback = [&] {
-        switch (selected) {
-        case 0:
-            tui::zfs_auto();
-            break;
-        case 1:
-            tui::zfs_menu_manual();
-            break;
-        default:
-            screen.ExitLoopClosure()();
-            return;
-        }
-    };
-
-    static constexpr auto zfs_menu_body = "\nZFS is a flexible and resilient file system that combines elements of\nlogical volume management, RAID and traditional file systems.\nZFS on Linux requires special handling and is not ideal for beginners.\n \nSelect automatic to select a partition and allow\nthe system to automate the creation a new a zpool and datasets\nmounted to '/', '/home' and '/var/cache/pacman'.\nManual configuration is available but requires specific knowledge of zfs.\n"sv;
-    auto text_size                      = size(HEIGHT, LESS_THAN, 10) | size(WIDTH, GREATER_THAN, 40);
-    detail::menu_widget(menu_entries, ok_callback, &selected, &screen, zfs_menu_body, {size(HEIGHT, LESS_THAN, 18), std::move(text_size)});
 }
 
 void make_esp(std::vector<gucc::fs::Partition>& partitions) noexcept {
@@ -1653,10 +1804,10 @@ void make_esp(std::vector<gucc::fs::Partition>& partitions) noexcept {
         std::int32_t selected{};
         bool success{};
         auto ok_callback = [&] {
-            const auto& src   = partitions_list[static_cast<std::size_t>(selected)];
-            const auto& lines = gucc::utils::make_multiline(src, false, ' ');
-            answer            = lines[0];
-            success           = true;
+            const auto& src          = partitions_list[static_cast<std::size_t>(selected)];
+            const auto& lines        = gucc::utils::make_multiline(src, false, ' ');
+            answer                   = lines[0];
+            success                  = true;
             screen.ExitLoopClosure()();
         };
 
@@ -1900,8 +2051,7 @@ auto mount_root_partition(std::vector<gucc::fs::Partition>& partitions) noexcept
     const auto& zfs_zpool_names = std::get<std::vector<std::string>>(config_data["ZFS_ZPOOL_NAMES"]);
     if (!zfs_zpool_names.empty()) {
 #ifdef NDEVENV
-        // NOTE: assuming we only support single zpool
-        const auto& zfs_zpool_name = zfs_zpool_names[0];
+        const auto& zfs_zpool_name = zfs_zpool_names[0]; // Use first zpool name
         const auto& zfs_import_cmd = fmt::format(FMT_COMPILE("zfs import -N -R {} {} &>>/tmp/cachyos-install.log"), mountpoint_info, zfs_zpool_name);
         if (!gucc::utils::exec_checked(zfs_import_cmd)) {
             spdlog::error("Failed to import zpool: {}", zfs_import_cmd);
@@ -1910,14 +2060,14 @@ auto mount_root_partition(std::vector<gucc::fs::Partition>& partitions) noexcept
         }
         spdlog::info("Imported ZFS pool {}", zfs_zpool_name);
 #else
-        spdlog::info("[DRY-RUN] Would import ZFS pool {}", zfs_zpool_name);
+        spdlog::info("[DRY-RUN] Would import ZFS pool {}", zfs_zpool_names[0]);
 #endif
         return true;
     }
 
     // check to see if we already have a zfs root mounted
     if (gucc::fs::utils::get_mountpoint_fs(mountpoint_info) == "zfs"sv) {
-        detail::infobox_widget("\nUsing ZFS root on \'/\'\n"sv);
+        detail::infobox_widget("\nUsing ZFS root on \'/\'\n");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         return true;
     }
@@ -1953,7 +2103,7 @@ void mount_partitions() noexcept {
     utils::umount_partitions();
 
     // We need to remount the zfs filesystems that have defined mountpoints already
-    gucc::utils::exec("zfs mount -aO &>/dev/null");
+    gucc::fs::utils::zfs_mount_all();
 
     // Get list of available partitions
     utils::find_partitions();
@@ -1973,7 +2123,7 @@ void mount_partitions() noexcept {
     /* const auto& parts = gucc::utils::make_multiline(ignore_part);
     for (const auto& part : parts) {
         utils::delete_partition_in_list(part);
-    }*/
+   }*/
 
     std::vector<gucc::fs::Partition> partitions{};
 
@@ -2024,6 +2174,7 @@ void mount_partitions() noexcept {
                 success                  = true;
                 screen.ExitLoopClosure()();
             };
+
             /* clang-format off */
             static constexpr auto extra_part_body = "\nSelect additional partitions in any order, or 'Done' to finish.\n"sv;
             detail::menu_widget(temp, ok_callback, &selected, &screen, extra_part_body, {.text_size = size(HEIGHT, GREATER_THAN, 1)});
@@ -2104,7 +2255,7 @@ void mount_partitions() noexcept {
         if (mount_dev == "/boot"sv) {
             config_data["LVM_SEP_BOOT"] = 1;
 
-            const auto& cmd        = fmt::format(FMT_COMPILE("lsblk -lno TYPE {} | grep -q 'lvm'"), partition);
+            const auto& cmd        = fmt::format(FMT_COMPILE("lsblk -lno TYPE {} | grep -q lvm"), partition);
             const bool is_boot_lvm = gucc::utils::exec_checked(cmd);
             if (is_boot_lvm) {
                 config_data["LVM_SEP_BOOT"] = 2;
@@ -2125,14 +2276,10 @@ void configure_mirrorlist() noexcept {
     auto ok_callback = [&] {
         switch (selected) {
         case 0:
-            screen.Suspend();
             tui::edit_pacman_conf();
-            screen.Resume();
             break;
         case 1:
-            screen.Suspend();
             gucc::utils::exec("cachyos-rate-mirrors"sv, true);
-            screen.Resume();
             break;
         default:
             screen.ExitLoopClosure()();
@@ -2308,7 +2455,6 @@ void system_rescue_menu() noexcept {
         case 3:
             if (!utils::check_base()) {
                 screen.ExitLoopClosure()();
-                break;
             }
             tui::remove_pkgs();
             break;
@@ -2377,7 +2523,7 @@ void prep_menu() noexcept {
             break;
         }
         case 3:
-            SPDLOG_ERROR("Implement me!");
+            tui::raid_menu();
             break;
         case 4:
             tui::lvm_menu();
@@ -2429,6 +2575,7 @@ void menu_advanced() noexcept {
         case 1: {
             if (!utils::check_mount()) {
                 screen.ExitLoopClosure()();
+                break;
             }
             tui::install_core_menu();
             break;
@@ -2493,3 +2640,36 @@ void init() noexcept {
 }
 
 }  // namespace tui
+
+// Move this function into the tui namespace
+void tui::lvm_del_all() noexcept {
+    const auto& do_del_all = detail::yesno_widget(
+        "Are you sure you want to remove ALL LVM structures (LVs, VGs, PVs)?\n\nThis action cannot be undone!"sv,
+        size(HEIGHT, LESS_THAN, 15) | size(WIDTH, LESS_THAN, 75));
+    if (!do_del_all) { return; }
+
+    lvm_del_all();
+}
+
+void tui::zfs_menu() noexcept {
+    auto text_size = size(WIDTH, GREATER_THAN, 20);
+    const std::vector<std::string> menu_entries = {
+        "create zpool",
+        "exit",
+    };
+    auto screen = ScreenInteractive::Fullscreen();
+    std::int32_t selected{};
+    auto ok_callback = [&] {
+        screen.ExitLoopClosure()();
+    };
+    static constexpr auto zfs_menu_body = "\nZFS Configuration\n\n"sv;
+    detail::menu_widget(menu_entries, ok_callback, &selected, &screen, zfs_menu_body, {std::move(text_size), size(HEIGHT, LESS_THAN, 18)});
+
+    switch (selected) {
+        case 0:
+            zfs_create_zpool();
+            break;
+        default:
+            break;
+    }
+}

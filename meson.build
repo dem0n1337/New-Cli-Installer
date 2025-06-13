@@ -14,17 +14,8 @@ is_tests_build = get_option('build_tests')
 do_build_static = get_option('build_static')
 cc = meson.get_compiler('cpp')
 if cc.get_id() == 'clang'
-    specific_cc_flags = [
-        '-nostdlib++',
-        #'-stdlib=libc++',
-        #'-nodefaultlibs',
-        #'-fexperimental-library',
-        '-fstrict-vtable-pointers',
-        '-fexperimental-new-pass-manager',
-    ]
-    #specific_link_flags = [
-    #   '-stdlib=libc++',
-    #]
+    specific_cc_flags = ['-fstrict-vtable-pointers']
+    specific_link_flags = ['-stdlib=libc++']
     add_global_arguments(cc.get_supported_arguments(specific_cc_flags), language : 'cpp')
     add_global_link_arguments(cc.get_supported_link_arguments(specific_link_flags), language : 'cpp')
 endif
@@ -74,6 +65,7 @@ src_files = files(
     'src/definitions.hpp',
     'src/config.cpp', 'src/config.hpp',
     'src/utils.cpp', 'src/utils.hpp',
+    'src/kernel_params.cpp',
     'src/disk.cpp', 'src/disk.hpp',
     'src/drivers.cpp', 'src/drivers.hpp',
     'src/widgets.cpp', 'src/widgets.hpp',
@@ -154,8 +146,9 @@ if not is_debug_build
    endif
 
    possible_cc_flags += ['-fdata-sections', '-ffunction-sections']
+   possible_link_flags = []
    if do_build_static
-      possible_link_flags = ['-Wl,--gc-sections', '-static-libgcc', '-static-libstdc++']
+      possible_link_flags += ['-Wl,--gc-sections', '-static-libgcc', '-static-libstdc++']
    endif
    add_project_link_arguments(cc.get_supported_link_arguments(possible_link_flags), language : 'cpp')
 endif

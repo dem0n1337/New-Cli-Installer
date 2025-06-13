@@ -55,6 +55,22 @@ struct fmt::formatter<gucc::fs::ZfsDataset> : fmt::formatter<std::string> {
 };
 
 template <>
+struct fmt::formatter<std::vector<gucc::fs::ZfsDataset>> : fmt::formatter<std::string> {
+    // parse is inherited from fmt::formatter<std::string>.
+    template <typename FormatContext>
+    auto format(const std::vector<gucc::fs::ZfsDataset>& datasets, FormatContext& ctx) const -> decltype(ctx.out()) {
+        fmt::format_to(ctx.out(), "[");
+        for (size_t i = 0; i < datasets.size(); ++i) {
+            if (i > 0) {
+                fmt::format_to(ctx.out(), ", ");
+            }
+            fmt::format_to(ctx.out(), "{}", datasets[i]);
+        }
+        return fmt::format_to(ctx.out(), "]");
+    }
+};
+
+template <>
 struct fmt::formatter<gucc::fs::ZfsSetupConfig> : fmt::formatter<std::string> {
     // parse is inherited from fmt::formatter<std::string>.
     template <typename FormatContext>

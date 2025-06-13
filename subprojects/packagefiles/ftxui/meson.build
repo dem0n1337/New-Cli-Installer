@@ -5,6 +5,10 @@ project('ftxui', 'cpp',
 )
 
 cpp = meson.get_compiler('cpp')
+ftxui_cpp_args = []
+if cpp.get_id() == 'clang'
+    ftxui_cpp_args += ['-stdlib=libc++', '-fstrict-vtable-pointers']
+endif
 thread_dep = dependency('threads')
 ranges = dependency('range-v3', version : ['>=0.11.0'], fallback : ['range-v3', 'range_dep'])
 
@@ -23,7 +27,8 @@ ftxui_screen_lib = static_library('ftxui_screen',
         'include/ftxui/screen/string.hpp'
     ],
     include_directories : ftxui_inc,
-    dependencies : [thread_dep, ranges]
+    dependencies : [thread_dep, ranges],
+    cpp_args : ftxui_cpp_args
 )
 
 ftxui_dom_lib = static_library('ftxui_dom',
@@ -73,7 +78,8 @@ ftxui_dom_lib = static_library('ftxui_dom',
     ],
     include_directories : [ftxui_inc, ftxui_priv_inc],
     link_with : [ftxui_screen_lib],
-    dependencies : [thread_dep, ranges]
+    dependencies : [thread_dep, ranges],
+    cpp_args : ftxui_cpp_args
 )
 
 ftxui_component_lib = static_library('ftxui_component',
@@ -112,7 +118,8 @@ ftxui_component_lib = static_library('ftxui_component',
     ],
     include_directories : [ftxui_inc, ftxui_priv_inc],
     link_with : [ftxui_dom_lib],
-    dependencies : [thread_dep, ranges]
+    dependencies : [thread_dep, ranges],
+    cpp_args : ftxui_cpp_args
 )
 
 ftxui_dep = declare_dependency(

@@ -46,12 +46,13 @@ class Initcpio final {
     inline bool append_hooks(std::vector<std::string>&& hook) noexcept {
         /* clang-format off */
         if (!this->parse_file()) { return false; }
-        auto&& filtered_input = hook | std::ranges::views::filter([&](auto&& el) {
+        auto filtered_elements = hook | std::ranges::views::filter([&](auto&& el) {
             return !std::ranges::contains(hooks, el);
-        }) | std::ranges::to<std::vector<std::string>>();
-        if (filtered_input.empty()) { return false; }
+        });
+        std::vector<std::string> to_add(filtered_elements.begin(), filtered_elements.end());
+        if (to_add.empty()) { return false; }
 
-        hooks.insert(hooks.end(), filtered_input.begin(), filtered_input.end());
+        hooks.insert(hooks.end(), to_add.begin(), to_add.end());
         return this->write();
     }
     inline bool insert_hook(std::string&& needle, std::string&& hook) noexcept {
@@ -67,14 +68,15 @@ class Initcpio final {
     inline bool insert_hook(std::string&& needle, std::vector<std::string>&& hook) noexcept {
         /* clang-format off */
         if (!this->parse_file()) { return false; }
-        auto&& filtered_input = hook | std::ranges::views::filter([&](auto&& el) {
+        auto filtered_elements = hook | std::ranges::views::filter([&](auto&& el) {
             return !std::ranges::contains(hooks, el);
-        }) | std::ranges::to<std::vector<std::string>>();
-        if (filtered_input.empty()) { return false; }
+        });
+        std::vector<std::string> to_add(filtered_elements.begin(), filtered_elements.end());
+        if (to_add.empty()) { return false; }
         /* clang-format on */
 
-        auto&& needle_pos = std::ranges::find(hooks, std::move(needle));
-        hooks.insert(std::move(needle_pos), filtered_input.begin(), filtered_input.end());
+        auto needle_pos = std::ranges::find(hooks, needle); // Pass needle by const ref or value if not meant to be moved yet
+        hooks.insert(needle_pos, to_add.begin(), to_add.end());
         return this->write();
     }
 

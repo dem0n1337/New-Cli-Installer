@@ -53,12 +53,15 @@ auto get_repo_list(std::string_view file_path) noexcept -> std::vector<std::stri
         spdlog::error("[PACMANCONFREPO] '{}' error occurred!", file_path);
         return {};
     }
-    return file_content | std::ranges::views::split('\n')
+    auto result_range = file_content | std::ranges::views::split('\n')
         | std::ranges::views::filter([](auto&& rng) {
-              auto&& line = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
-              return !line.empty() && !line.starts_with('#') && line.starts_with('[') && !line.starts_with("[options]");
+              auto&& line_sv = std::string_view(&*rng.begin(), static_cast<size_t>(std::ranges::distance(rng)));
+              return !line_sv.empty() && !line_sv.starts_with('#') && line_sv.starts_with('[') && !line_sv.starts_with("[options]");
           })
-        | std::ranges::to<std::vector<std::string>>();
+        | std::ranges::views::transform([](auto&& rng_inner) {
+              return std::string(rng_inner.begin(), rng_inner.end());
+          });
+    return std::vector<std::string>(result_range.begin(), result_range.end());
 }
 
 }  // namespace gucc::detail::pacmanconf

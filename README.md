@@ -1,88 +1,106 @@
-<img src="./demo.gif" alt="Demo image"></img>
+# 🚀 cachyos-new-installer 🚀
 
-# cachyos-new-installer
-CLI net-installer for CachyOS, inspired by manjaro-architect
+![Demo image](./demo.gif)
 
-This installer provides online installation for CachyOS.
+CLI net-installer for CachyOS, inspired by manjaro-architect.
 
-Fast and smooth installer for Arch based operating system.
+This installer provides online installation for CachyOS. It aims to be a fast and smooth installer for Arch-based operating systems. 💨
 
-Requirements
-------------
-* C++23 feature required (tested with GCC 14.1.1 and Clang 18)
-Any compiler which support C++23 standard should work.
+## ✨ Core Features
 
-######
-## Installing from source
+* 🌐 Online installation for CachyOS.
+* 💾 Support for advanced storage setups including RAID and LVM.
+* 🔒 LUKS encryption.
+* 🛠️ Flexible partitioning and system configuration.
 
-This is tested on Arch Linux, but *any* recent Linux with latest C++23 compiler should do:
+## 🎯 Current Development Focus
+
+* **✅ Accomplished:**
+  * Basic RAID 0/1 array creation.
+  * Full LVM (PV/VG/LV) creation functionality - **not** fully working at the moment but it will be soon 😊
+* **🚧 Work in Progress / To Do:**
+  * Refining RAID management (deletion, diverse level support).
+  * Comprehensive LUKS testing and integration.
+  * Improving device listing and partitioning toolset.
+  * Simpler layout and flow for the installer.
+  * Future: Offline installation capabilities 📦.
+
+For detailed progress, ongoing tasks, and specific technical updates, please see [CHANGELOG.md](./CHANGELOG.md) 📝.
+
+## 📋 Requirements
+
+* C++23 compatible compiler (tested with GCC 14.1.1 and Clang 18).
+
+## 🛠️ Installing from source
+
+This is tested on Arch Linux, but *any* recent Linux with a C++23 compiler should work:
 
 ```sh
 sudo pacman -Sy \
     base-devel cmake pkg-config ninja clang mold llvm
 ```
 
-### Cloning the source code
+### Cloning the source code ⤵️
+
 ```sh
 git clone https://github.com/cachyos/new-cli-installer.git
 cd new-cli-installer
 ```
 
-### Building and Configuring
-#### cmake(recommended):
-To build, first, configure it(if you intend to install it globally, you
-might also want `-DCMAKE_INSTALL_PREFIX=/usr`):
+### Building and Configuring ⚙️
+
+#### CMake (recommended)
+
+To build, first, configure it (if you intend to install it globally, you might also want `-DCMAKE_INSTALL_PREFIX=/usr`):
+
 ```sh
 cmake -S . -B build
 ```
+
 Second, build it:
+
 ```sh
 cmake --build build
 ```
 
-#### meson:
-To build, first, configure it (if you intend to install it globally, you
-might also want `--prefix=/usr`):
+#### Meson
+
+To build, first, configure it (if you intend to install it globally, you might also want `--prefix=/usr`):
+
 ```sh
-meson build
+meson setup build # meson build for older meson versions
 ```
+
 Second, compile it:
+
 ```sh
 meson compile -C build
 ```
 
 Optionally, to disable developer environment:
-pass `-DENABLE_DEVENV=OFF` to cmake or `-Ddevenv=false` to meson when configuring the project.
+Pass `-DENABLE_DEVENV=OFF` to cmake or `-Ddevenv=false` to meson when configuring the project.
 
+## 📚 Libraries used in this project
 
-### Libraries used in this project
+* [Functional Terminal (X) User interface (FTXUI)](https://github.com/ArthurSonzogni/FTXUI)
+* [fmt (A modern formatting library)](https://github.com/fmtlib/fmt)
+* [spdlog (Fast C++ logging library)](https://github.com/gabime/spdlog)
+* [simdjson (Parsing gigabytes of JSON per second)](https://github.com/simdjson/simdjson)
+* [cpr (Curl for People)](https://github.com/libcpr/cpr)
+* [range-v3](https://github.com/ericniebler/range-v3)
 
-* [Functional Terminal (X) User interface](https://github.com/ArthurSonzogni/FTXUI) used for TUI.
-* [A modern formatting library](https://github.com/fmtlib/fmt) used for formatting strings, output and logging.
-* [Fast C++ logging library](https://github.com/gabime/spdlog) used for logging process of the installer.
-* [Parsing gigabytes of JSON per second](https://github.com/simdjson/simdjson) used for config deserialization.
-* [Curl for People](https://github.com/libcpr/cpr) used for connection check and maybe in future fetching netinstall config from github.
-* [Ranges](https://github.com/ericniebler/range-v3) used for ranges support.
+## 🗺️ Advanced menu overview
 
-
-**Simple menu overview:**
-
-TODO: should be simple as Calamares Installer
-
----
-
-**Advanced menu overview:**
-
-```
+```text
 Main Menu
 |
 ├── Prepare Installation
 |   ├── Set Virtual Console
 |   ├── List Devices
 |   ├── Partition Disk
-|   ├── RAID (WIP)
+|   ├── RAID (WIP - RAID 0/1 Creation OK)
 |   ├── LUKS Encryption
-|   ├── Logical Volume Management (WIP)
+|   ├── Logical Volume Management (Creation OK)
 |   ├── Mount Partitions
 |   ├── Configure Installer Mirrorlist
 |   |   ├── Edit Pacman Configuration

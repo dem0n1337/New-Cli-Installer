@@ -52,3 +52,7 @@ subprojects/packagecache
 .vagrant
 storage.vdi
 compile_commands.json
+
+# Build output directories
+build_prod
+builddir
